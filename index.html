@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input Transaksi & Struk</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f4f7;color:#222}
+.container{max-width:1100px;margin:auto;padding:16px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #0001}
+h1,h2{margin:0 0 14px}
+h1{font-size:22px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+label{font-size:13px;font-weight:bold;display:block;margin-bottom:5px}
+input,textarea,select{width:100%;padding:11px;border:1px solid #ccd2d8;border-radius:8px;font-size:15px}
+textarea{min-height:70px;resize:vertical}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:8px;padding:11px 16px;cursor:pointer;font-weight:bold}
+.primary{background:#1677ff;color:white}.green{background:#159447;color:white}
+.gray{background:#e9edf1}.red{background:#d93025;color:white}
+.search{margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #e5e7eb;padding:9px;text-align:left;vertical-align:top}
+th{background:#f7f8fa}
+.small{font-size:12px;color:#666}
+#preview{display:none}
+.receipt{background:#fff;color:#000;margin:auto;padding:10px;font-family:"Courier New",monospace;font-size:12px;line-height:1.35}
+.receipt.w58{width:58mm}.receipt.w80{width:80mm}
+.receipt-title{text-align:center;font-weight:bold;font-size:16px;margin-bottom:8px}
+.rline{border-top:1px dashed #000;margin:6px 0}
+.rrow{display:flex;gap:5px}.rlabel{width:34%;flex:none}.rvalue{width:66%;word-break:break-word}
+@media(max-width:700px){.grid{grid-template-columns:1fr}table{font-size:11px}.container{padding:8px}}
+@media print{
+ body{background:#fff}.no-print{display:none!important}
+ #preview{display:block!important}.receipt{box-shadow:none}
+ @page{margin:0}
+}
+
+/* PRINT F4 */
+.f4-manual-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:600px){.f4-manual-row{grid-template-columns:1fr}}
+@media print{
+ .f4-table th{color:#0066ff!important;text-align:center!important;background:#fff!important;border-top:1px solid #000!important;border-bottom:2px solid #000!important}
+ .f4-table td{font-size:10px;padding:3.5px 4px}
+ .f4-table .money{text-align:right!important;white-space:nowrap}
+ .f4-table tbody tr:last-child td{border-bottom:3px solid #000!important}
+ .f4-summary{margin-top:4mm;display:flex;justify-content:space-between;gap:10mm;font-size:11px}
+ .f4-sign{width:48%;text-align:left;line-height:1.5}
+ .f4-totals{width:48%}
+ .f4-total-row{display:flex;justify-content:space-between;border-bottom:1px solid #222;padding:2px 0}
+ .f4-pay-row{display:flex;justify-content:space-between;padding:2px 0}
+ .f4-pay-last{border-bottom:3px double #000!important;padding-bottom:3px}
+ .f4-total-label{font-weight:bold}.f4-total-value{text-align:right;white-space:nowrap}
+}
+
+.print-panel{background:#f8fafc;border:1px solid #dbe2e8;border-radius:10px;padding:14px;margin:12px 0}
+.print-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.print-grid label{font-size:12px}
+.print-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.check-cell{text-align:center!important;width:42px}
+#printCount{font-weight:bold}
+@media(max-width:900px){.print-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.print-grid{grid-template-columns:1fr}}
+@media print{
+ body{background:#fff!important}
+ #f4PrintArea{display:block!important}
+ .no-print{display:none!important}
+ #preview{display:none!important}
+ @page{size:210mm 330mm;margin:10mm}
+ .f4-page{width:190mm;margin:0 auto;font-family:Arial,sans-serif;color:#000}
+ .f4-title{text-align:center;font-size:18px;font-weight:bold;margin-bottom:4mm}
+ .f4-meta{font-size:11px;margin-bottom:4mm;display:flex;justify-content:flex-end}
+ .f4-meta-right{text-align:left;min-width:55mm}.f4-meta-right div{margin-bottom:1mm}
+ .f4-table{width:100%;border-collapse:collapse;font-size:11px}
+ .f4-table th,.f4-table td{border:1px solid #222;padding:4px 5px;vertical-align:top}
+ .f4-table th{text-align:center!important;color:#00AEEF!important;background:#fff!important;border-top:1px solid #222!important;border-bottom:2px solid #222!important;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .f4-table .f4-last-data td{border-bottom:2px solid #222!important}
+ .f4-table .money{text-align:right;white-space:nowrap}
+ .f4-table thead{display:table-header-group}.f4-table tr{page-break-inside:avoid}
+ .f4-bottom{display:flex;align-items:flex-start;gap:10mm;margin-top:3mm}
+ .f4-signature{width:50%;font-size:11px;line-height:1.35}.f4-sign-space{height:12mm}
+ .f4-sign-names{display:flex;justify-content:space-between;gap:8mm;text-align:center;font-size:10px}
+ .f4-sign-names span{width:50%}
+ .f4-totals{width:50%;font-size:11px}
+ .f4-summary{display:flex;justify-content:flex-end;gap:8mm;padding:1.5mm 0;font-weight:bold}
+ .f4-summary>span:first-child{min-width:38mm;text-align:right}.f4-summary .money{min-width:38mm;text-align:right;white-space:nowrap}
+ .f4-payable{border-bottom:3px double #222;padding-bottom:2mm}
+ .f4-footer{font-size:9px;margin-top:4mm}
+}
+#f4PrintArea{display:none}
+
+/* KOREKSI PRINT F4 */
+@media print{
+  .f4-table th{
+    color:#000!important;
+    background:#19A7FF!important;
+    text-align:center!important;
+    font-weight:bold!important;
+    border-top:3px double #000!important;
+    border-bottom:2px solid #000!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  .f4-table .f4-last-data td{border-bottom:2px solid #000!important}
+  .f4-totals{width:78mm!important;font-size:11px!important}
+  .f4-summary{
+    display:grid!important;
+    grid-template-columns:38mm 40mm!important;
+    justify-content:end!important;
+    gap:0!important;
+    padding:0!important;
+    margin:0!important;
+    font-weight:bold!important;
+  }
+  .f4-summary>span:first-child,
+  .f4-summary .money{
+    min-width:0!important;
+    text-align:right!important;
+    padding:1.4mm 2mm!important;
+    border-left:1px solid #222!important;
+    border-bottom:1px solid #222!important;
+    white-space:nowrap!important;
+  }
+  .f4-summary>span:first-child{border-left:1px solid #222!important}
+  .f4-summary .money{border-right:1px solid #222!important}
+  .f4-payable{border-bottom:0!important;padding-bottom:0!important}
+  .f4-payable>span:first-child,
+  .f4-payable .money{border-bottom:3px double #000!important}
+}
+/* KOREKSI FONT PRINT - DIPERBESAR, JUDUL TETAP 18px */
+@media print{
+  .f4-meta{font-size:13px!important}
+  .f4-table{font-size:13px!important}
+  .f4-table th,.f4-table td{font-size:13px!important;padding:5px 6px!important}
+  .f4-signature{font-size:13px!important}
+  .f4-sign-names{font-size:12px!important}
+  .f4-totals{font-size:13px!important}
+  .f4-summary{font-size:13px!important}
+  .f4-footer{font-size:11px!important}
+  .f4-title{font-size:18px!important}
+}
+</style>
+</head>
+<body>
+<div class="container no-print">
+  <div class="card">
+    <h1>Input Data Transaksi</h1>
+    <div class="small">Data disimpan offline di perangkat/browser menggunakan penyimpanan lokal.</div>
+    <form id="form">
+      <div class="grid" style="margin-top:14px">
+        <div><label>Tanggal</label><input id="tanggal" type="date" required></div>
+        <div><label>No Polisi</label><input id="nopol" required></div>
+        <div><label>Atas Nama PT.</label><input id="pt"></div>
+        <div><label>Kode TRX</label><input id="trx"></div>
+        <div><label>WIL</label><input id="wil"></div>
+        <div><label>PKB</label><input id="pkb" inputmode="numeric" placeholder="0"></div>
+        <div><label>HPP</label><input id="hpp" inputmode="numeric" placeholder="0"></div>
+        <div><label>Proses</label><input id="proses" inputmode="numeric" placeholder="0"></div>
+        <div><label>Selesai</label><input id="selesai" type="date"></div>
+        <div><label>Keterangan</label><textarea id="ket"></textarea></div>
+      </div>
+      <div class="buttons">
+        <button class="primary" type="submit">Simpan Data</button>
+        <button class="gray" type="button" onclick="resetForm()">Form Baru</button>
+        <button class="green" type="button" id="btnAmbilData" onclick="ambilDataGoogleSheet()">Ambil Data</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Data Transaksi</h2>
+    <div id="dataInfo" class="small" style="margin-bottom:6px">Belum mengambil data dari Google Sheet. Klik <b>Ambil Data</b> untuk mengambil data terbaru.</div>
+    <div class="print-panel">
+      <h3 style="margin:0 0 10px">Filter & Print Data — Kertas F4 (21 × 33 cm)</h3>
+      <div class="print-grid">
+        <div><label>Kode TRX</label><input id="printTrx" placeholder="Contoh: OT-CB5-TRG" oninput="render()"></div>
+        <div><label>Selesai Dari</label><input id="printFrom" type="date" onchange="render()"></div>
+        <div><label>Selesai Sampai</label><input id="printTo" type="date" onchange="render()"></div>
+        <div><label>DP</label><input id="printDP" inputmode="numeric" placeholder="0" oninput="formatManualMoney(this)"></div>
+        <div><label>Hutang/Piutang</label><input id="printHutang" inputmode="numeric" placeholder="0" oninput="formatManualMoney(this)"></div>
+      </div>
+      <div class="print-actions">
+        <button class="gray" type="button" onclick="selectAllFiltered(true)">Centang Semua Hasil Filter</button>
+        <button class="gray" type="button" onclick="selectAllFiltered(false)">Batal Centang Semua</button>
+        <button class="green" type="button" onclick="printSelectedF4()">Print Data Tercentang</button>
+        <span id="printCount" class="small">0 data tercentang</span>
+      </div>
+      <div class="small" style="margin-top:7px">Filter hanya berdasarkan **Kode TRX** dan tanggal pada kolom **Selesai**. Setelah hasil muncul, centang data yang benar-benar ingin dicetak. Ukuran kertas: F4 / Folio 21 × 33 cm.</div>
+    </div>
+    <input class="search" id="search" placeholder="Cari cepat No Polisi / PT / Kode TRX..." oninput="render()">
+    <div id="tableInfo" class="small" style="margin-bottom:8px"></div>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr>
+          <th class="check-cell">✓</th><th>No</th><th>Tanggal</th><th>No Polisi</th><th>PT.</th><th>Kode TRX</th>
+          <th>WIL</th><th>PKB</th><th>HPP</th><th>Proses</th><th>Selesai</th><th>Aksi</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="f4PrintArea"></div>
+
+<div id="preview">
+  <div class="receipt w58" id="receipt"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "transaksi_offline_v1";
+const INITIAL_DATA = [];
+let data = [];
+let editingId = null;
+const selectedPrintIds = new Set();
+let db = null;
+let dbReady = false;
+let visibleLimit = 300;
+
+function openDatabase(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open("TransaksiF4GoogleDB",1);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains("data")) d.createObjectStore("data",{keyPath:"id"});
+    };
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+function dbGetAll(){
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readonly"), req=tx.objectStore("data").getAll();
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+function dbPutAll(items){
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readwrite"), store=tx.objectStore("data");
+    items.forEach(x=>store.put(x));
+    tx.oncomplete=resolve; tx.onerror=e=>reject(e.target.error);
+  });
+}
+function dbPut(item){
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readwrite");
+    tx.objectStore("data").put(item);
+    tx.oncomplete=resolve; tx.onerror=e=>reject(e.target.error);
+  });
+}
+function dbDelete(id){
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readwrite");
+    tx.objectStore("data").delete(id);
+    tx.oncomplete=resolve; tx.onerror=e=>reject(e.target.error);
+  });
+}
+async function initData(){
+  try{
+    db=await openDatabase();
+    data=await dbGetAll();
+    dbReady=true;
+    render(); updateDataInfo();
+  }catch(e){
+    console.error(e);
+    data=[]; dbReady=false;
+    render(); updateDataInfo();
+  }
+}
+
+async function saveItem(item){
+  if(dbReady){
+    try{ await dbPut(item); return true; }catch(e){ console.error(e); }
+  }
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); return true; }
+  catch(e){ alert("Penyimpanan browser penuh. Data baru belum tersimpan. Gunakan Chrome atau Edge terbaru."); return false; }
+}
+function updateDataInfo(){
+  const el=$("dataInfo");
+  if(!el) return;
+  el.innerHTML=data.length
+    ? "Total data: "+data.length.toLocaleString("id-ID")+" | Sumber: Google Sheet <b>TRX_GLOBAL</b> | Penyimpanan: "+(dbReady?"Database lokal (IndexedDB)":"mode cadangan")
+    : "Belum ada data. Klik <b>Ambil Data</b> untuk mengambil data terbaru dari Google Sheet <b>TRX_GLOBAL</b>.";
+}
+
+function $(id){return document.getElementById(id)}
+function val(id){return $(id).value.trim()}
+
+function formatRupiah(v){
+  let s=String(v??"").replace(/[^\d]/g,"");
+  if(!s) return "";
+  return "Rp"+Number(s).toLocaleString("id-ID");
+}
+function formatTanggal(v){
+  if(!v) return "";
+  const p=v.split("-");
+  return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : v;
+}
+function moneyInput(id){
+  $(id).addEventListener("input", e=>{
+    let raw=e.target.value.replace(/[^\d]/g,"");
+    e.target.value=raw ? Number(raw).toLocaleString("id-ID") : "";
+  });
+}
+["pkb","hpp","proses"].forEach(moneyInput);
+
+$("tanggal").value = new Date().toISOString().slice(0,10);
+
+$("form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const obj={
+    id: editingId || ("new_"+Date.now()),
+    "TANGGAL": formatTanggal(val("tanggal")),
+    "NO POLISI": val("nopol"),
+    "ATAS NAMA PT.": val("pt"),
+    "KODE TRX": val("trx"),
+    "WIL": val("wil"),
+    "PKB": formatRupiah(val("pkb")),
+    "HPP": formatRupiah(val("hpp")),
+    "PROSES": formatRupiah(val("proses")),
+    "SELESAI": formatTanggal(val("selesai")),
+    "KETERANGAN": val("ket")
+  };
+  if(editingId){
+    const i=data.findIndex(x=>x.id===editingId);
+    if(i>=0) data[i]=obj;
+  }else data.unshift(obj);
+  const ok=await saveItem(obj);
+  if(!ok) return;
+  render(); updateDataInfo();
+  editingId=null; resetForm();
+  showReceipt(obj);
+});
+
+// ================= GOOGLE SHEET =================
+const GOOGLE_SHEET_ID="1ORfNIVa93L5hKYiWKCAMPe-iitrZpyePC8uGYa5oZ48";
+const GOOGLE_SHEET_GID="693659397";
+const GOOGLE_SHEET_NAME="TRX_GLOBAL";
+function normalizeHeader(v){return String(v||"").trim().toUpperCase().replace(/[._-]+/g," ").replace(/\s+/g," ");}
+function parseCSV(text){const rows=[];let row=[],cell="",quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else quoted=false;}else cell+=c;}else{if(c==='"')quoted=true;else if(c===','){row.push(cell);cell="";}else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell="";}else if(c==='\r'){}else cell+=c;}}row.push(cell);if(row.length>1||row[0]!=="")rows.push(row);return rows;}
+function sheetDate(v){const x=String(v??"").trim();if(!x)return "";let m=x.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);if(m)return `${m[3].padStart(2,"0")}/${m[2].padStart(2,"0")}/${m[1]}`;m=x.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${m[3]}`;return x;}
+function mapSheetRow(row,headers,index){const obj={};headers.forEach((h,i)=>obj[h]=String(row[i]??"").trim());function pick(names){for(const n of names){const k=normalizeHeader(n);if(Object.prototype.hasOwnProperty.call(obj,k))return obj[k];}return "";}return {id:"gs_"+index+"_"+Date.now(),"TANGGAL":sheetDate(pick(["TANGGAL","DATE","TGL"])),"NO POLISI":pick(["NO POLISI","NOPOL","NO. POLISI"]),"ATAS NAMA PT.":pick(["ATAS NAMA PT.","ATAS NAMA","NAMA","NAMA PT"]),"KODE TRX":pick(["KODE TRX","KODE"]),"WIL":pick(["WIL","WILAYAH"]),"PKB":pick(["PKB"]),"HPP":pick(["HPP"]),"PROSES":pick(["PROSES","PROCESS"]),"SELESAI":sheetDate(pick(["SELESAI","SELESAI DATE","TGL SELESAI"])),"KETERANGAN":pick(["KETERANGAN","CATATAN"])};}
+function csvToData(text){const rows=parseCSV(text).filter(r=>r.some(v=>String(v).trim()!==""));if(!rows.length)throw new Error("Google Sheet tidak mengembalikan data.");const headers=rows[0].map(normalizeHeader);const required=["TANGGAL","NO POLISI","KODE TRX","WIL","PKB","PROSES","SELESAI"];const missing=required.filter(h=>!headers.includes(h));if(missing.length)throw new Error("Header tidak cocok. Kolom tidak ditemukan: "+missing.join(", "));return rows.slice(1).map((r,i)=>mapSheetRow(r,headers,i)).filter(x=>Object.values(x).some(v=>String(v||"").trim()!==""));}
+function gvizUrl(){return `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(GOOGLE_SHEET_NAME)}&gid=${GOOGLE_SHEET_GID}`;}
+async function fetchGoogleCSV(){
+  try{
+    const res=await fetch(gvizUrl(),{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status+" saat mengambil Google Sheet.");
+    const text=await res.text();
+    if(!text||text.trim().startsWith("<"))throw new Error("Respons Google Sheet bukan CSV.");
+    return text;
+  }catch(fetchErr){
+    console.warn("Fetch CSV gagal, mencoba JSONP:",fetchErr);
+    return await fetchGoogleJSONP();
+  }
+}
+function fetchGoogleJSONP(){
+  return new Promise((resolve,reject)=>{
+    const cb="googleSheetCallback_"+Date.now();
+    const script=document.createElement("script");
+    const timeout=setTimeout(()=>{cleanup();reject(new Error("Google Sheet tidak dapat diakses. Pastikan file dibagikan sebagai \"Siapa saja yang memiliki link\" dan sheet TRX_GLOBAL dapat dilihat."));},15000);
+    function cleanup(){clearTimeout(timeout);if(script.parentNode)script.parentNode.removeChild(script);try{delete window[cb];}catch(e){window[cb]=undefined;}}
+    window[cb]=function(resp){
+      cleanup();
+      if(!resp){reject(new Error("Respons Google Sheet kosong."));return;}
+      if(resp.status!=="ok"){reject(new Error((resp.errors&&resp.errors[0]&&resp.errors[0].detailed_message)||resp.errors?.[0]?.message||"Google Sheet menolak akses."));return;}
+      try{
+        const table=resp.table||{};
+        const cols=(table.cols||[]).map(c=>c.label||c.id||"");
+        const rows=[cols];
+        (table.rows||[]).forEach(r=>rows.push((r.c||[]).map(c=>c==null?"":(c.f!=null?c.f:c.v))));
+        resolve(rows.map(row=>row.map(v=>{const x=String(v==null?"":v);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(",")).join("\n"));
+      }catch(e){reject(new Error("Format data Google Sheet tidak dikenali."));}
+    };
+    script.onerror=()=>{cleanup();reject(new Error("Gagal memuat data Google Sheet melalui browser."));};
+    script.src="https://docs.google.com/spreadsheets/d/"+GOOGLE_SHEET_ID+"/gviz/tq?tqx=responseHandler:"+cb+"&sheet="+encodeURIComponent(GOOGLE_SHEET_NAME)+"&gid="+GOOGLE_SHEET_GID+"&t="+Date.now();
+    document.head.appendChild(script);
+  });
+}
+function ambilDataGoogleSheet(){const btn=$("btnAmbilData"),info=$("dataInfo");if(btn){btn.disabled=true;btn.textContent="Mengambil Data...";}if(info)info.innerHTML="<b>Sedang mengambil data terbaru dari Google Sheet TRX_GLOBAL...</b>";selectedPrintIds.clear();fetchGoogleCSV().then(async text=>{const incoming=csvToData(text);if(!incoming.length)throw new Error("Data pada TRX_GLOBAL kosong.");data=incoming;if(dbReady){await new Promise((resolve,reject)=>{const tx=db.transaction("data","readwrite"),store=tx.objectStore("data");tx.oncomplete=resolve;tx.onerror=e=>reject(e.target.error);store.clear();});await dbPutAll(data);}else{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}}render();updateDataInfo();if(info)info.innerHTML="<b>Berhasil!</b> Data terbaru dari TRX_GLOBAL: "+data.length.toLocaleString("id-ID")+" baris.";}).catch(err=>{console.error(err);if(info)info.innerHTML='<span style="color:#d93025"><b>Gagal mengambil data:</b> '+esc(err.message||String(err))+'</span>';alert("Data Google Sheet gagal diambil.\n\n"+(err.message||err)+"\n\nPastikan sheet TRX_GLOBAL dapat diakses secara publik oleh browser.");}).finally(()=>{if(btn){btn.disabled=false;btn.textContent="Ambil Data";}});}
+function formatManualMoney(el){
+  const raw=String(el.value||"").trim();
+  if(raw==="-"){el.value="-";return;}
+  const negative=raw.charAt(0)==="-";
+  const digits=raw.replace(/[^\d]/g,"");
+  if(!digits){el.value=negative?"-":"";return;}
+  el.value=(negative?"-":"")+Number(digits).toLocaleString("id-ID");
+}
+function moneyValue(v){const n=Number(String(v??"").replace(/[^\d-]/g,""));return Number.isFinite(n)?n:0;}
+function printMoney(v){return "Rp."+Math.round(Number(v)||0).toLocaleString("id-ID");}
+
+function resetForm(){
+  $("form").reset();
+  editingId=null;
+  $("tanggal").value=new Date().toISOString().slice(0,10);
+}
+
+function getPrintFilteredData(){
+  const from=$("printFrom").value;
+  const to=$("printTo").value;
+  const trx=$("printTrx").value.toLowerCase().trim();
+  const q=$("search").value.toLowerCase().trim();
+  return data.filter(x=>{
+    // Filter tanggal berdasarkan KOLOM SELESAI, bukan TANGGAL transaksi.
+    const d=toISO(x["SELESAI"]);
+    const dateOk=(!from || (d && d>=from)) && (!to || (d && d<=to));
+    const t=String(x["KODE TRX"]||"").toLowerCase();
+    const quick=!q || Object.values(x).join(" ").toLowerCase().includes(q);
+    return dateOk && t.includes(trx) && quick;
+  });
+}
+function render(){
+  const rows=getPrintFilteredData();
+  const shown=rows.slice(0,visibleLimit);
+  $("tbody").innerHTML=shown.map((x,i)=>`
+    <tr>
+      <td class="check-cell"><input type="checkbox" class="print-check" data-id="${esc(x.id)}" ${selectedPrintIds.has(x.id)?"checked":""} onchange="togglePrintSelection(this)"></td>
+      <td>${i+1}</td><td>${esc(x["TANGGAL"])}</td><td>${esc(x["NO POLISI"])}</td>
+      <td>${esc(x["ATAS NAMA PT."])}</td><td>${esc(x["KODE TRX"])}</td><td>${esc(x["WIL"])}</td>
+      <td>${esc(x["PKB"])}</td><td>${esc(x["HPP"])}</td><td>${esc(x["PROSES"])}</td>
+      <td>${esc(x["SELESAI"])}</td>
+      <td>
+        <button class="gray" onclick="editRow('${x.id}')">Edit</button>
+        <button class="red" onclick="deleteRow('${x.id}')">Hapus</button>
+      </td>
+    </tr>`).join("");
+  const info=$("tableInfo");
+  if(info) info.textContent=rows.length>shown.length ? `Menampilkan ${shown.length.toLocaleString("id-ID")} dari ${rows.length.toLocaleString("id-ID")} hasil filter. Data yang dicentang tetap tersimpan.` : `Menampilkan ${shown.length.toLocaleString("id-ID")} hasil filter.`;
+  updatePrintCount();
+}
+function togglePrintSelection(el){
+  const id=el.getAttribute("data-id");
+  if(el.checked) selectedPrintIds.add(id); else selectedPrintIds.delete(id);
+  updatePrintCount();
+}
+function updatePrintCount(){
+  const el=$("printCount");
+  if(el) el.textContent=`${selectedPrintIds.size.toLocaleString("id-ID")} data tercentang`;
+}
+function selectAllFiltered(flag){
+  const rows=getPrintFilteredData();
+  rows.forEach(x=>flag?selectedPrintIds.add(x.id):selectedPrintIds.delete(x.id));
+  render();
+}
+
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+function editRow(id){
+  const x=data.find(a=>a.id===id); if(!x)return;
+  editingId=id;
+  $("tanggal").value=toISO(x["TANGGAL"]);
+  $("nopol").value=x["NO POLISI"]||"";
+  $("pt").value=x["ATAS NAMA PT."]||"";
+  $("trx").value=x["KODE TRX"]||"";
+  $("wil").value=x["WIL"]||"";
+  $("pkb").value=numberText(x["PKB"]);
+  $("hpp").value=numberText(x["HPP"]);
+  $("proses").value=numberText(x["PROSES"]);
+  $("selesai").value=toISO(x["SELESAI"]);
+  $("ket").value=x["KETERANGAN"]||"";
+  scrollTo(0,0);
+}
+function numberText(s){return String(s||"").replace(/[^\d]/g,"")}
+function toISO(s){
+  const p=String(s||"").split("/");
+  return p.length===3 ? `${p[2]}-${p[1]}-${p[0]}` : "";
+}
+async function deleteRow(id){
+  if(confirm("Hapus data ini?")){
+    data=data.filter(x=>x.id!==id);
+    selectedPrintIds.delete(id);
+    try{
+      if(dbReady) await dbDelete(id);
+      else localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+      render(); updateDataInfo();
+    }catch(e){ alert("Data gagal dihapus dari penyimpanan."); }
+  }
+}
+function printSelectedF4(){
+  const selected=data.filter(x=>selectedPrintIds.has(x.id));
+  if(!selected.length){alert("Belum ada data yang dicentang untuk dicetak.");return;}
+
+  const area=$("f4PrintArea");
+  const dp=moneyValue($("printDP").value);
+  const hutang=moneyValue($("printHutang").value);
+  let total=0;
+
+  const rows=selected.map((x,i)=>{
+    const pkb=moneyValue(x["PKB"])*1000;
+    const proses=moneyValue(x["PROSES"]);
+    const jumlah=pkb+proses;
+    total+=jumlah;
+    return {i,x,jumlah};
+  });
+
+  const harusDibayar=total+dp+hutang;
+
+  function formatMoney(v){
+    return "Rp."+Math.round(Number(v)||0).toLocaleString("id-ID");
+  }
+  function formatPKBPrint(v){
+    const n=moneyValue(v)*1000;
+    return formatMoney(n);
+  }
+  function printProcess(v){
+    return formatMoney(moneyValue(v));
+  }
+
+  area.innerHTML=`<div class="f4-page">
+    <div class="f4-title">NOTA STNK SELESAI</div>
+    <div class="f4-meta"><div class="f4-meta-right">
+      <div><strong>Nama   :</strong> ${esc($("printTrx").value || "Semua")}</div>
+      <div><strong>Tanggal:</strong> ${esc(new Date().toLocaleDateString("id-ID"))}</div>
+    </div></div>
+    <table class="f4-table">
+      <thead><tr><th>No</th><th>Tanggal</th><th>No Polisi</th><th>Atas Nama PT.</th><th>WIL</th><th>PKB</th><th>Proses</th><th>Jumlah</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        ${rows.map((r,idx)=>`<tr class="${idx===rows.length-1?"f4-last-data":""}"><td>${r.i+1}</td><td>${esc(r.x["TANGGAL"])}</td><td>${esc(r.x["NO POLISI"])}</td><td>${esc(r.x["ATAS NAMA PT."])}</td><td>${esc(r.x["WIL"])}</td><td class="money">${esc(formatPKBPrint(r.x["PKB"]))}</td><td class="money">${esc(printProcess(r.x["PROSES"]))}</td><td class="money">${esc(formatMoney(r.jumlah))}</td><td>${esc(r.x["KETERANGAN"])}</td></tr>`).join("")}
+        <tr><td colspan="9" style="padding:0;border:0;height:0"></td></tr>
+      </tbody>
+    </table>
+    <div class="f4-bottom">
+      <div class="f4-signature">
+        <div>    Tanda Terima,</div>
+        <div class="f4-sign-space"></div>
+        <div class="f4-sign-names"><span>________________________</span><span>______________________________</span></div>
+        <div class="f4-sign-names"><span>${esc($("printTrx").value || "Nama")}</span><span>Manager</span></div>
+      </div>
+      <div class="f4-totals">
+        <div class="f4-summary"><span>Total</span><span class="money">${esc(formatMoney(total))}</span></div>
+        <div class="f4-summary"><span>DP</span><span class="money">${esc(formatMoney(dp))}</span></div>
+        <div class="f4-summary"><span>Hutang/Piutang</span><span class="money">${esc(formatMoney(hutang))}</span></div>
+        <div class="f4-summary f4-payable"><span>Yg Hrs Di Byr</span><span class="money">${esc(formatMoney(harusDibayar))}</span></div>
+      </div>
+    </div>
+  </div>`;
+  window.print();
+}
+
+function showReceiptById(id){
+  const x=data.find(a=>a.id===id); if(x) showReceipt(x);
+}
+function previewLast(){
+  if(data.length) showReceipt(data[0]);
+  else alert("Belum ada data.");
+}
+function showReceipt(x){
+  const r=$("receipt");
+  r.innerHTML=`
+    <div class="receipt-title">STRUK TRANSAKSI</div>
+    <div style="text-align:center">DATA TRANSAKSI</div>
+    <div class="rline"></div>
+    ${rr("Tanggal",x["TANGGAL"])}
+    ${rr("No Polisi",x["NO POLISI"])}
+    ${rr("Atas Nama",x["ATAS NAMA PT."])}
+    ${rr("Kode TRX",x["KODE TRX"])}
+    ${rr("WIL",x["WIL"])}
+    <div class="rline"></div>
+    ${rr("PKB",x["PKB"])}
+    ${rr("HPP",x["HPP"])}
+    ${rr("Proses",x["PROSES"])}
+    ${rr("Selesai",x["SELESAI"])}
+    ${rr("Keterangan",x["KETERANGAN"])}
+    <div class="rline"></div>
+    <div style="text-align:center;margin-top:8px">TERIMA KASIH</div>
+    <div style="text-align:center">--------------------</div>
+  `;
+  $("preview").style.display="block";
+  setTimeout(()=>window.print(),250);
+}
+function rr(a,b){return `<div class="rrow"><div class="rlabel">${esc(a)}</div><div class="rvalue">${esc(b||"-")}</div></div>`}
+initData();
+</script>
+</body>
+</html>
