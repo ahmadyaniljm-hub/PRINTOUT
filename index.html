@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Input Transaksi & Struk</title>
+<title>Lancar Jaya Mandiri 2026</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f2f4f7;color:#222}
@@ -139,13 +139,30 @@ th{background:#f7f8fa}
   .f4-footer{font-size:11px!important}
   .f4-title{font-size:18px!important}
 }
+
+/* LAYOUT INPUT + PIUTANG */
+.input-piutang-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.input-piutang-layout>.card{margin-bottom:0}
+.piutang-card{min-width:0}
+.piutang-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}
+.piutang-toolbar input{font-size:14px;padding:9px}
+.piutang-toolbar button{padding:9px 12px}
+.piutang-info{font-size:11px;color:#666;margin-bottom:8px}
+.piutang-table-wrap{max-height:390px;overflow:auto;border:1px solid #dbe2e8;border-radius:8px;background:#fff}
+.piutang-table{width:100%;border-collapse:collapse;font-size:12px}
+.piutang-table th,.piutang-table td{border-bottom:1px solid #e5e7eb;padding:7px 8px;text-align:left;vertical-align:top}
+.piutang-table th{background:#eef7ff;font-weight:bold;position:sticky;top:0;z-index:1}
+.piutang-pilih{padding:5px 9px!important;font-size:11px!important;white-space:nowrap}
+.piutang-empty{text-align:center!important;color:#777;padding:18px!important}
+@media(max-width:900px){.input-piutang-layout{grid-template-columns:1fr}.piutang-table-wrap{max-height:320px}}
 </style>
 </head>
 <body>
 <div class="container no-print">
+  <div class="input-piutang-layout">
   <div class="card">
-    <h1>Input Data Transaksi</h1>
-    <div class="small">Data disimpan offline di perangkat/browser menggunakan penyimpanan lokal.</div>
+    <h1>Input Data STNK</h1>
+    <div class="small">Lancar Jaya Mandiri 2026</div>
     <form id="form">
       <div class="grid" style="margin-top:14px">
         <div><label>Tanggal</label><input id="tanggal" type="date" required></div>
@@ -161,17 +178,33 @@ th{background:#f7f8fa}
       </div>
       <div class="buttons">
         <button class="primary" type="submit">Simpan Data</button>
-        <button class="gray" type="button" onclick="resetForm()">Form Baru</button>
+        <button class="gray" type="button" onclick="resetForm()"></button>
         <button class="green" type="button" id="btnAmbilData" onclick="ambilDataGoogleSheet()">Ambil Data</button>
       </div>
     </form>
+  </div>
+
+  <div class="card piutang-card">
+    <h2>Data PIUTANG</h2>
+    <div class="piutang-toolbar">
+      <input id="piutangFilter" type="text" placeholder="Filter PIUTANG..." oninput="renderPiutang()">
+      
+    </div>
+    <div id="piutangInfo" class="piutang-info">Belum mengambil data PIUTANG.</div>
+    <div class="piutang-table-wrap">
+      <table class="piutang-table">
+        <thead id="piutangHead"><tr><th>Nama Klien</th><th>Hutang/Piutang</th><th></th></tr></thead>
+        <tbody id="piutangBody"><tr><td colspan="3" class="piutang-empty">Klik "Ambil Data" untuk menampilkan PIUTANG.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
   </div>
 
   <div class="card">
     <h2>Data Transaksi</h2>
     <div id="dataInfo" class="small" style="margin-bottom:6px">Belum mengambil data dari Google Sheet. Klik <b>Ambil Data</b> untuk mengambil data terbaru.</div>
     <div class="print-panel">
-      <h3 style="margin:0 0 10px">Filter & Print Data — Kertas F4 (21 × 33 cm)</h3>
+      <h3 style="margin:0 0 10px"></h3>
       <div class="print-grid">
         <div><label>Kode TRX</label><input id="printTrx" placeholder="Contoh: OT-CB5-TRG" oninput="render()"></div>
         <div><label>Selesai Dari</label><input id="printFrom" type="date" onchange="render()"></div>
@@ -185,7 +218,7 @@ th{background:#f7f8fa}
         <button class="green" type="button" onclick="printSelectedF4()">Print Data Tercentang</button>
         <span id="printCount" class="small">0 data tercentang</span>
       </div>
-      <div class="small" style="margin-top:7px">Filter hanya berdasarkan **Kode TRX** dan tanggal pada kolom **Selesai**. Setelah hasil muncul, centang data yang benar-benar ingin dicetak. Ukuran kertas: F4 / Folio 21 × 33 cm.</div>
+      <div class="small" style="margin-top:7px">Filter hanya berdasarkan **Kode TRX** dan tanggal pada kolom **Selesai**. Setelah hasil muncul, centang data yang benar-benar ingin dicetak.</div>
     </div>
     <input class="search" id="search" placeholder="Cari cepat No Polisi / PT / Kode TRX..." oninput="render()">
     <div id="tableInfo" class="small" style="margin-bottom:8px"></div>
@@ -280,8 +313,8 @@ function updateDataInfo(){
   const el=$("dataInfo");
   if(!el) return;
   el.innerHTML=data.length
-    ? "Total data: "+data.length.toLocaleString("id-ID")+" | Sumber: Google Sheet <b>TRX_GLOBAL</b> | Penyimpanan: "+(dbReady?"Database lokal (IndexedDB)":"mode cadangan")
-    : "Belum ada data. Klik <b>Ambil Data</b> untuk mengambil data terbaru dari Google Sheet <b>TRX_GLOBAL</b>.";
+    ? "Total data: "+data.length.toLocaleString("id-ID")+" | Sumber: Server LJM <b>2026</b> | Penyimpanan: "+(dbReady?"Database Server LJM":"mode cadangan")
+    : "Belum ada data. Klik <b>Ambil Data</b> untuk mengambil data terbaru dari <b>Server LJM</b>.";
 }
 
 function $(id){return document.getElementById(id)}
@@ -378,7 +411,31 @@ function fetchGoogleJSONP(){
     document.head.appendChild(script);
   });
 }
-function ambilDataGoogleSheet(){const btn=$("btnAmbilData"),info=$("dataInfo");if(btn){btn.disabled=true;btn.textContent="Mengambil Data...";}if(info)info.innerHTML="<b>Sedang mengambil data terbaru dari Google Sheet TRX_GLOBAL...</b>";selectedPrintIds.clear();fetchGoogleCSV().then(async text=>{const incoming=csvToData(text);if(!incoming.length)throw new Error("Data pada TRX_GLOBAL kosong.");data=incoming;if(dbReady){await new Promise((resolve,reject)=>{const tx=db.transaction("data","readwrite"),store=tx.objectStore("data");tx.oncomplete=resolve;tx.onerror=e=>reject(e.target.error);store.clear();});await dbPutAll(data);}else{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}}render();updateDataInfo();if(info)info.innerHTML="<b>Berhasil!</b> Data terbaru dari TRX_GLOBAL: "+data.length.toLocaleString("id-ID")+" baris.";}).catch(err=>{console.error(err);if(info)info.innerHTML='<span style="color:#d93025"><b>Gagal mengambil data:</b> '+esc(err.message||String(err))+'</span>';alert("Data Google Sheet gagal diambil.\n\n"+(err.message||err)+"\n\nPastikan sheet TRX_GLOBAL dapat diakses secara publik oleh browser.");}).finally(()=>{if(btn){btn.disabled=false;btn.textContent="Ambil Data";}});}
+async function ambilDataGoogleSheet(){
+  const btn=$("btnAmbilData"), info=$("dataInfo");
+  if(btn){btn.disabled=true;btn.textContent="Mengambil Data...";}
+  if(info) info.innerHTML="<b>Sedang mengambil Data Transaksi + PIUTANG...</b>";
+  selectedPrintIds.clear();
+  try{
+    const results=await Promise.all([fetchGoogleCSV(),loadPiutang()]);
+    const incoming=csvToData(results[0]);
+    if(!incoming.length) throw new Error("Data pada Server LJM kosong.");
+    data=incoming;
+    if(dbReady){
+      await new Promise((resolve,reject)=>{const tx=db.transaction("data","readwrite"),store=tx.objectStore("data");tx.oncomplete=resolve;tx.onerror=e=>reject(e.target.error);store.clear();});
+      await dbPutAll(data);
+    }else{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}}
+    render(); updateDataInfo();
+    if(info) info.innerHTML="<b>Berhasil!</b> Data Transaksi: "+data.length.toLocaleString("id-ID")+" Data STNK &nbsp;|&nbsp; PIUTANG: "+piutangData.length.toLocaleString("id-ID")+" Klien.";
+  }catch(err){
+    console.error(err);
+    if(info) info.innerHTML='<span style="color:#d93025"><b>Gagal mengambil data:</b> '+esc(err.message||String(err))+'</span>';
+    alert("Data belum lengkap diambil.\n\n"+(err.message||err)+"\n\nPastikan Server Data LJM dapat terkoneksi.");
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="Ambil Data";}
+  }
+}
+
 function formatManualMoney(el){
   const raw=String(el.value||"").trim();
   if(raw==="-"){el.value="-";return;}
@@ -509,10 +566,10 @@ function printSelectedF4(){
   }
 
   area.innerHTML=`<div class="f4-page">
-    <div class="f4-title">NOTA STNK SELESAI</div>
+    
     <div class="f4-meta"><div class="f4-meta-right">
-      <div><strong>Nama   :</strong> ${esc($("printTrx").value || "Semua")}</div>
-      <div><strong>Tanggal:</strong> ${esc(new Date().toLocaleDateString("id-ID"))}</div>
+      <div><strong>Nama :</strong> ${esc($("printTrx").value || "Semua")}</div>
+      <div><strong>Tanggal Dicetak :</strong> ${esc(new Date().toLocaleDateString("id-ID"))}</div>
     </div></div>
     <table class="f4-table">
       <thead><tr><th>No</th><th>Tanggal</th><th>No Polisi</th><th>Atas Nama PT.</th><th>WIL</th><th>PKB</th><th>Proses</th><th>Jumlah</th><th>Keterangan</th></tr></thead>
@@ -523,7 +580,7 @@ function printSelectedF4(){
     </table>
     <div class="f4-bottom">
       <div class="f4-signature">
-        <div>    Tanda Terima,</div>
+        <div>Tanda Terima,</div>
         <div class="f4-sign-space"></div>
         <div class="f4-sign-names"><span>________________________</span><span>______________________________</span></div>
         <div class="f4-sign-names"><span>${esc($("printTrx").value || "Nama")}</span><span>Manager</span></div>
@@ -572,6 +629,79 @@ function showReceipt(x){
 }
 function rr(a,b){return `<div class="rrow"><div class="rlabel">${esc(a)}</div><div class="rvalue">${esc(b||"-")}</div></div>`}
 initData();
+
+
+/* DATA PIUTANG */
+const PIUTANG_SHEET_ID="1ORfNIVa93L5hKYiWKCAMPe-iitrZpyePC8uGYa5oZ48";
+const PIUTANG_GID="831508637";
+const PIUTANG_SHEET_NAME="PIUTANG";
+let piutangData=[];
+let piutangHeaders=[];
+let piutangLoaded=false;
+
+function loadPiutang(){
+  return new Promise((resolve,reject)=>{
+    const info=$("piutangInfo");
+    if(info) info.textContent="Mengambil data PIUTANG...";
+    const cb="piutangCallback_"+Date.now();
+    let finished=false;
+    function cleanup(){try{delete window[cb]}catch(e){} const old=document.getElementById(cb); if(old) old.remove();}
+    function fail(err){if(finished)return;finished=true;cleanup();if(info)info.innerHTML='<span style="color:#d93025"><b>PIUTANG gagal:</b> '+esc(err.message||String(err))+'</span>';reject(err);}
+    const timeout=setTimeout(()=>fail(new Error("Google Sheet PIUTANG tidak dapat diakses. Pastikan sheet dapat dilihat publik.")),15000);
+    window[cb]=function(resp){
+      if(finished)return;
+      clearTimeout(timeout);
+      try{
+        if(!resp || resp.status && resp.status!=="ok") throw new Error((resp&&resp.errors&&resp.errors[0]&&resp.errors[0].detailed_message)||"Respons PIUTANG tidak valid.");
+        const cols=(resp.table&&resp.table.cols)||[];
+        const rows=(resp.table&&resp.table.rows)||[];
+        piutangHeaders=cols.map((c,i)=>String(c.label||c.id||("Kolom "+(i+1))));
+        piutangData=rows.map(r=>(r.c||[]).map(c=>c&&c.f!=null?String(c.f):(c&&c.v!=null?String(c.v):"")));
+        piutangLoaded=true;
+        renderPiutang();
+        if(info) info.textContent="Data PIUTANG: "+piutangData.length.toLocaleString("id-ID")+" Klien";
+        finished=true;cleanup();resolve(piutangData.length);
+      }catch(e){fail(e);}
+    };
+    const sc=document.createElement("script");
+    sc.id=cb;
+    sc.onerror=()=>fail(new Error("Gagal memuat data PIUTANG melalui browser."));
+    sc.src="https://docs.google.com/spreadsheets/d/"+PIUTANG_SHEET_ID+"/gviz/tq?tqx=responseHandler:"+cb+"&sheet="+encodeURIComponent(PIUTANG_SHEET_NAME)+"&gid="+PIUTANG_GID+"&t="+Date.now();
+    document.body.appendChild(sc);
+  });
+}
+
+function renderPiutang(){
+  const head=$("piutangHead"), body=$("piutangBody"), filter=($("piutangFilter")?.value||"").toLowerCase().trim();
+  if(!head||!body) return;
+  const h1="Nama Klien";
+  const h2="Hutang/Piutang";
+  head.innerHTML="<tr><th>"+esc(h1)+"</th><th>"+esc(h2)+"</th><th></th></tr>";
+  let rows=piutangData.map((r,index)=>({r,index})).filter(o=>!filter || o.r.some(v=>String(v||"").toLowerCase().includes(filter)));
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="3" class="piutang-empty">'+(piutangLoaded?'Data tidak ditemukan.':'Klik "Ambil Data" untuk menampilkan PIUTANG.')+'</td></tr>';
+    return;
+  }
+  body.innerHTML=rows.map(o=>{
+    const r=o.r;
+    return '<tr><td>'+esc(r[0]||'')+'</td><td>'+esc(r[1]||'')+'</td><td><button type="button" class="green piutang-pilih" onclick="pilihPiutang('+o.index+')">Pilih</button></td></tr>';
+  }).join("");
+}
+
+function pilihPiutang(index){
+  const row=piutangData[index];
+  if(!row) return;
+  const raw=String(row[1]||"").trim();
+  const num=Math.abs(moneyValue(raw));
+  if(!num){
+    $("printHutang").value=raw==="-"?"-":"0";
+    return;
+  }
+  // PIUTANG negatif -> masukkan positif. PIUTANG positif -> masukkan negatif.
+  const hasil=raw.charAt(0)==="-" ? num : -num;
+  $("printHutang").value=(hasil<0?"-":"")+Math.abs(hasil).toLocaleString("id-ID");
+  $("printHutang").focus();
+}
 </script>
 </body>
 </html>
